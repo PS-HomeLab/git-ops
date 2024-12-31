@@ -16,6 +16,3 @@ spec:
 
       imagePullSecrets:
         - name: nexus-registry
-
-      nodeSelector:
-        role: master
