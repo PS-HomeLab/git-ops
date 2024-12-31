@@ -45,9 +45,6 @@ spec:
     statefulset:
       clustered: false
 
-      nodeSelector:
-        role: master
-
     service:
       nexus:
         enabled: true
