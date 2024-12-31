@@ -8,7 +8,6 @@ spec:
   interval: 30m
 
   dependsOn:
-    - name: metallb
     - name: cert-manager
     - name: external-dns
 
