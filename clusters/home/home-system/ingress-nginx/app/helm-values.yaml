@@ -6,6 +6,7 @@ controller:
   config:
     enable-real-ip: true
     use-forwarded-headers: true
+    proxy-body-size: 0
 
   service:
     externalTrafficPolicy: "Local"
