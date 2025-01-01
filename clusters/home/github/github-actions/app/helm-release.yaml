@@ -22,6 +22,7 @@ spec:
 
     githubConfigUrl: https://github.com/PS-HomeLab
     githubConfigSecret: github-auth
+    runnerGroup: self-hosted
 
     template:
       spec:
