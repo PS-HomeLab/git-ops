@@ -9,4 +9,4 @@ resources:
   - runner-envs.yaml
   - nexus-registry.yaml
   - helm-release.yaml
-  - runner-deployment.yaml
+  - controller-helm-release.yaml
