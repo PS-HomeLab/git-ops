@@ -22,58 +22,55 @@ spec:
 
     githubConfigUrl: https://github.com/PS-HomeLab
     githubConfigSecret: github-auth
-
     runnerScaleSetName: self-hosted
-
-    containerMode:
-      type: "kubernetes"  ## type can be set to dind or kubernetes
-      ## the following is required when containerMode.type=kubernetes
-      kubernetesModeWorkVolumeClaim:
-        accessModes: ["ReadWriteOnce"]
-        storageClassName: "longhorn"
-        resources:
-          requests:
-            storage: 1Gi
 
     template:
       spec:
-        securityContext:
-          fsGroup: 123
         initContainers:
-          - name: kube-init
+          - name: init-dind-externals
             image: ghcr.io/actions/actions-runner:latest
-            command: [ "sudo", "chown", "-R", "1001:123", "/home/runner/_work" ]
+            command:
+              ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
             volumeMounts:
-              - name: work
-                mountPath: /home/runner/_work
-
+              - name: dind-externals
+                mountPath: /home/runner/tmpDir
         containers:
           - name: runner
             image: ghcr.io/actions/actions-runner:latest
             command: ["/home/runner/run.sh"]
             env:
-              - name: ACTIONS_RUNNER_CONTAINER_HOOKS
-                value: /home/runner/k8s/index.js
-              - name: ACTIONS_RUNNER_POD_NAME
-                valueFrom:
-                  fieldRef:
-                    fieldPath: metadata.name
-              - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-                value: "true"
+              - name: DOCKER_HOST
+                value: unix:///var/run/docker.sock
             envFrom:
               - secretRef:
                   name: runner-envs
             volumeMounts:
               - name: work
                 mountPath: /home/runner/_work
-
+              - name: dind-sock
+                mountPath: /var/run
+          - name: dind
+            image: docker:dind
+            args:
+              - dockerd
+              - --host=unix:///var/run/docker.sock
+              - --group=$(DOCKER_GROUP_GID)
+            env:
+              - name: DOCKER_GROUP_GID
+                value: "123"
+            securityContext:
+              privileged: true
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+              - name: dind-externals
+                mountPath: /home/runner/externals
         volumes:
           - name: work
-            ephemeral:
-              volumeClaimTemplate:
-                spec:
-                  accessModes: [ "ReadWriteOnce" ]
-                  storageClassName: "longhorn"
-                  resources:
-                    requests:
-                      storage: 1Gi
+            emptyDir: {}
+          - name: dind-sock
+            emptyDir: {}
+          - name: dind-externals
+            emptyDir: {}
