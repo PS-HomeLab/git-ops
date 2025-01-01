@@ -58,6 +58,9 @@ spec:
             env:
               - name: DOCKER_GROUP_GID
                 value: "123"
+            envFrom:
+              - secretRef:
+                  name: runner-envs
             securityContext:
               privileged: true
             volumeMounts:
