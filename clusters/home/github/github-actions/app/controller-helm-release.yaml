@@ -18,8 +18,7 @@ spec:
 
   values:
     labels:
-      - customFoo
-      - self-hosted
+      customFoo: self-hosted
 
     imagePullSecrets:
       - name: nexus-registry
