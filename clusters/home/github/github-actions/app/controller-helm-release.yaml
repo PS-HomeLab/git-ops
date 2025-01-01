@@ -17,5 +17,8 @@ spec:
         namespace: flux-system
 
   values:
+    labels:
+      customFoo: customBar
+
     imagePullSecrets:
       - name: nexus-registry
