@@ -23,7 +23,18 @@ spec:
     githubConfigUrl: https://github.com/PS-HomeLab
     githubConfigSecret: github-auth
 
-    runnerScaleSetName: homelab-runner
+    runnerScaleSetName: self-hosted
+
+    containerMode:
+      type: "kubernetes"  ## type can be set to dind or kubernetes
+      ## the following is required when containerMode.type=kubernetes
+      kubernetesModeWorkVolumeClaim:
+        accessModes: ["ReadWriteOnce"]
+        # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
+        storageClassName: "longhorn"
+        resources:
+          requests:
+            storage: 1Gi
 
     template:
       spec:
