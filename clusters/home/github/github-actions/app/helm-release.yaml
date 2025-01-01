@@ -30,7 +30,6 @@ spec:
       ## the following is required when containerMode.type=kubernetes
       kubernetesModeWorkVolumeClaim:
         accessModes: ["ReadWriteOnce"]
-        # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
         storageClassName: "longhorn"
         resources:
           requests:
@@ -38,25 +37,36 @@ spec:
 
     template:
       spec:
+        securityContext:
+          fsGroup: 123
+        initContainers:
+          - name: kube-init
+            image: ghcr.io/actions/actions-runner:latest
+            command: [ "sudo", "chown", "-R", "1001:123", "/home/runner/_work" ]
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+
         containers:
-        - name: runner
-          image: ghcr.io/actions/actions-runner:latest
-          command: ["/home/runner/run.sh"]
-          env:
-            - name: ACTIONS_RUNNER_CONTAINER_HOOKS
-              value: /home/runner/k8s/index.js
-            - name: ACTIONS_RUNNER_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-              value: "true"
-          envFrom:
-            - secretRef:
-                name: runner-envs
-          volumeMounts:
-            - name: work
-              mountPath: /home/runner/_work
+          - name: runner
+            image: ghcr.io/actions/actions-runner:latest
+            command: ["/home/runner/run.sh"]
+            env:
+              - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+                value: /home/runner/k8s/index.js
+              - name: ACTIONS_RUNNER_POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+                value: "true"
+            envFrom:
+              - secretRef:
+                  name: runner-envs
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+
         volumes:
           - name: work
             ephemeral:
